@@ -23,6 +23,7 @@ class Net(nn.Module):
         # the output Tensor for one image, will have the dimensions: (32, 221, 221)
         # after one pool layer, this becomes (32, 110, 110)
         self.conv1 = nn.Conv2d(1, 32, 4)
+        torch.nn.init.xavier_uniform(self.conv1.weight)
         
         ## Note that among the layers to add, consider including:
         # maxpooling layers, multiple conv layers, fully-connected layers, and other layers (such as dropout or batch normalization) to avoid overfitting
@@ -36,15 +37,31 @@ class Net(nn.Module):
         # the output Tensor for one image, will have the dimensions: (64, 108, 108)
         # after one pool layer, this becomes (64, 54, 54)
         self.conv2 = nn.Conv2d(32, 64, 3)
+        torch.nn.init.xavier_uniform(self.conv2.weight)
         
         # third conv layer
         ## output size = (W-F)/S +1 = (54-2)/1 +1 = 53
         # the output Tensor for one image, will have the dimensions: (128, 53, 53)
         # after one pool layer, this becomes (128, 26, 26) # round down
         self.conv3 = nn.Conv2d(64, 128, 2)
+        torch.nn.init.xavier_uniform(self.conv3.weight)
+        
+        # forth conv layer
+        ## output size = (W-F)/S +1 = (26-2)/1 +1 = 25
+        # the output Tensor for one image, will have the dimensions: (256, 25, 25)
+        # after one pool layer, this becomes (256, 12, 12) # round down
+        self.conv4 = nn.Conv2d(128, 256, 2)
+        torch.nn.init.xavier_uniform(self.conv4.weight)
+        
+        # third conv layer
+        ## output size = (W-F)/S +1 = (12-2)/1 +1 = 11
+        # the output Tensor for one image, will have the dimensions: (512, 11, 11)
+        # after one pool layer, this becomes (512, 5, 5) # round down
+        self.conv5 = nn.Conv2d(256, 512, 2)
+        torch.nn.init.xavier_uniform(self.conv5.weight)
         
         # 128 outputs * the 25 x 25 filtered / pooled map size
-        self.fc1 = nn.Linear(128*26*26, 1000)
+        self.fc1 = nn.Linear(512*5*5, 1000)
         
         # dropout with p=0.5
         self.fc1_drop = nn.Dropout(p=0.5)
@@ -68,6 +85,8 @@ class Net(nn.Module):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = self.pool(F.relu(self.conv3(x)))
+        x = self.pool(F.relu(self.conv4(x)))
+        x = self.pool(F.relu(self.conv5(x)))
         
         #print('shape after conv3 {}'.format(x.shape))
         
